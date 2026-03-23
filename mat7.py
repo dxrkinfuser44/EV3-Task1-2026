@@ -36,11 +36,22 @@ def linefollow(base_speed=90, kp=1, ki=0, kd=1.5, target=45):
         robot.drive(speed, turn_rate)
         last_error = error
 
-def colorsense():
+def colorsense(base_speed=90, kp=1, ki=0, kd=1.5, target=45):
     while True:
         if light_sensor.color() == ColorSensor.COLOR_GREEN:
             robot.drive(100, -100)
         elif light_sensor.color() == ColorSensor.COLOR_RED:
             robot.drive(100, 100)
         else:
-            linefollow()
+            integral = 0
+            last_error = 0
+            max_turn = 500  # safe limit for turn rate
+            brightness = light_sensor.reflection()
+            error = target - brightness
+            integral += error
+            error_change = error - last_error
+            turn_rate = kp * error + ki * integral + kd * error_change
+            turn_rate = int(max(-max_turn, min(max_turn, turn_rate)))
+            speed = base_speed * math.exp(-0.07 * abs(error))
+            robot.drive(speed, turn_rate)
+            last_error = error
