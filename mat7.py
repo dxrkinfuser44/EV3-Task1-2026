@@ -1,7 +1,7 @@
 #!/usr/bin/env pybricks-micropython
 # Import necessary libraries
 from pybricks.ev3devices import Motor, ColorSensor, UltrasonicSensor
-from pybricks.parameters import Port
+from pybricks.parameters import Port, Color
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
@@ -21,7 +21,7 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=152)
 # ---------- MAINLINE PROGRAM ---------- #
 
 ### Here is where your code starts ###
-def linefollow(base_speed=90, kp=1, ki=0, kd=1.5, target=45):
+def linefollow2(base_speed=90, kp=1, ki=0, kd=1.5, target=45):
     integral = 0
     last_error = 0
     max_turn = 500  # safe limit for turn rate
@@ -55,3 +55,32 @@ def colorsense(base_speed=90, kp=1, ki=0, kd=1.5, target=45):
             speed = base_speed * math.exp(-0.07 * abs(error))
             robot.drive(speed, turn_rate)
             last_error = error
+
+def linefollow(base_speed=90, kp=1, ki=0, kd=1.5):
+    integral = 0
+    last_error = 0
+    max_turn = 500
+    color_error = {
+        Color.BLACK: -50,
+        Color.WHITE: 50,
+    }
+    while True:
+        color = light_sensor.color()
+        if color == Color.GREEN:
+            robot.drive(base_speed, -100)
+            integral = 0
+            last_error = 0
+        elif color == Color.RED:
+            robot.drive(base_speed, 100)
+            integral = 0
+            last_error = 0
+        else:
+            error = color_error.get(color, 0)
+            integral += error
+            error_change = error - last_error
+            turn_rate = kp * error + ki * integral + kd * error_change
+            turn_rate = int(max(-max_turn, min(max_turn, turn_rate)))
+            robot.drive(base_speed, turn_rate)
+            last_error = error
+
+linefollow()
