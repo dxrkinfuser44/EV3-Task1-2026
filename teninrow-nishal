@@ -68,7 +68,7 @@ while True:
         wait(1500)
         robot.stop()
     else:
-        #Turning (VIA GAMBLING YAYAYAYAY)
+        #Turning
         error = -L - Line_Follow
         turn_rate = (error * EM)
 
